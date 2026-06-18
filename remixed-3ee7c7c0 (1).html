@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rate Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500..900&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2A2620;
+    --paper:#F2EAD8;
+    --paper-soft:#E9DFC8;
+    --board:#1E2A22;
+    --board-soft:#293A2E;
+    --chalk:#ECE7D8;
+    --chalk-dim:#A9B5A8;
+    --marigold:#E8A33D;
+    --marigold-deep:#C77F1F;
+    --teal:#2F4A3D;
+    --rate-up:#A8442F;
+    --rate-down:#56714C;
+    --line:rgba(42,38,32,0.14);
+    --shadow:0 10px 30px rgba(30,42,34,0.18);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Work Sans',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif;margin:0;}
+  button{font-family:inherit;cursor:pointer;}
+  input,select{font-family:inherit;}
+  :focus-visible{outline:2.5px solid var(--marigold-deep);outline-offset:2px;}
+
+  #app{max-width:980px;margin:0 auto;padding:0 20px 60px;}
+
+  /* ---------- Banner ---------- */
+  .preview-banner{
+    background:var(--marigold);
+    color:#2A2009;
+    font-size:13px;
+    font-weight:600;
+    text-align:center;
+    padding:8px 16px;
+    border-radius:0 0 10px 10px;
+    margin:0 auto;
+    max-width:980px;
+  }
+
+  /* ---------- Header ---------- */
+  header.top{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:16px;
+    padding:36px 0 22px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:28px;
+    flex-wrap:wrap;
+  }
+  .shop-name{
+    font-size:clamp(28px,4vw,40px);
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  .shop-name-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .farm-mark{flex-shrink:0;}
+  .shop-name-input{
+    font-family:'Fraunces',serif;
+    font-size:clamp(24px,4vw,34px);
+    font-weight:700;
+    background:transparent;
+    border:none;
+    border-bottom:2px dashed var(--line);
+    padding:2px 0;
+    color:var(--ink);
+    width:min(420px,90%);
+  }
+  .board-subtitle{
+    font-size:13px;
+    color:#6b6354;
+    margin-top:4px;
+  }
+  .board-contact{
+    font-size:13px;
+    color:#6b6354;
+    margin-top:2px;
+    font-weight:600;
+  }
+  .nav-link{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--ink);
+    font-size:13px;
+    font-weight:600;
+    padding:9px 16px;
+    border-radius:999px;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    transition:background .15s, transform .15s;
+  }
+  .nav-link:hover{background:var(--paper-soft);}
+  .nav-link:active{transform:scale(.97);}
+  .hidden-trigger{
+    width:44px;
+    height:44px;
+    border:none;
+    background:none;
+    padding:0;
+    opacity:0;
+  }
+
+  /* ---------- Search / chips ---------- */
+  .controls{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    margin-bottom:22px;
+  }
+  .search-box{
+    flex:1 1 220px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:10px 14px;
+    font-size:14px;
+    color:var(--ink);
+  }
+  .chips{display:flex;gap:8px;flex-wrap:wrap;}
+  .chip{
+    background:var(--paper-soft);
+    border:1px solid transparent;
+    color:var(--ink);
+    font-size:13px;
+    font-weight:600;
+    padding:7px 14px;
+    border-radius:999px;
+  }
+  .chip.active{
+    background:var(--teal);
+    color:var(--chalk);
+  }
+
+  /* ---------- Board (chalkboard panel) ---------- */
+  .board-panel{
+    background:var(--board);
+    border-radius:20px;
+    padding:28px;
+    box-shadow:var(--shadow);
+    position:relative;
+    overflow:hidden;
+  }
+  .board-panel::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:radial-gradient(circle at 18% 8%, rgba(255,255,255,0.04), transparent 45%);
+    pointer-events:none;
+  }
+  .category-block{margin-bottom:26px;}
+  .category-block:last-child{margin-bottom:0;}
+  .category-title{
+    color:var(--marigold);
+    font-family:'Work Sans',sans-serif;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    margin-bottom:12px;
+    padding-bottom:8px;
+    border-bottom:1px solid rgba(236,231,216,0.14);
+  }
+  .card-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
+    gap:14px;
+  }
+  .rate-card{
+    background:var(--board-soft);
+    border-radius:12px;
+    padding:16px 16px 14px;
+    border:1px solid rgba(236,231,216,0.08);
+    opacity:0;
+    animation:cardIn .5s ease forwards;
+  }
+  @keyframes cardIn{
+    from{opacity:0;transform:translateY(8px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  .rate-card .pname{
+    color:var(--chalk);
+    font-weight:600;
+    font-size:15px;
+    margin-bottom:8px;
+    line-height:1.25;
+  }
+  .rate-row{
+    display:flex;
+    align-items:baseline;
+    gap:6px;
+    perspective:400px;
+  }
+  .rate-num{
+    font-family:'JetBrains Mono',monospace;
+    font-weight:700;
+    font-size:23px;
+    color:var(--chalk);
+    display:inline-block;
+    transform-origin:center;
+  }
+  .rate-num.flipping{animation:flip .5s ease;}
+  @keyframes flip{
+    0%{transform:rotateX(0);opacity:1;}
+    45%{transform:rotateX(-90deg);opacity:0;}
+    55%{transform:rotateX(90deg);opacity:0;}
+    100%{transform:rotateX(0);opacity:1;}
+  }
+  .rate-unit{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    color:var(--chalk-dim);
+  }
+  .trend{
+    display:inline-flex;
+    align-items:center;
+    font-size:12px;
+    font-weight:700;
+    margin-left:4px;
+  }
+  .trend.up{color:var(--rate-up);}
+  .trend.down{color:var(--rate-down);}
+  .pnote{
+    color:var(--chalk-dim);
+    font-size:11.5px;
+    margin-top:6px;
+    font-style:italic;
+  }
+  .pupdated{
+    color:var(--chalk-dim);
+    font-size:10.5px;
+    margin-top:8px;
+    opacity:.75;
+  }
+
+  .board-footer{
+    text-align:center;
+    color:#7c7461;
+    font-size:12px;
+    margin-top:16px;
+  }
+
+  /* ---------- Empty state ---------- */
+  .empty-state{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--chalk-dim);
+  }
+  .empty-state h3{color:var(--chalk);font-size:20px;margin-bottom:8px;}
+  .empty-state p{font-size:14px;margin-bottom:18px;}
+  .empty-cta{
+    background:var(--marigold);
+    color:#2A2009;
+    border:none;
+    font-weight:700;
+    font-size:13px;
+    padding:11px 20px;
+    border-radius:999px;
+  }
+
+  /* ---------- Admin ---------- */
+  .admin-card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:22px;
+    margin-bottom:18px;
+    box-shadow:0 4px 16px rgba(30,42,34,0.06);
+  }
+  .admin-card h3{font-size:16px;margin-bottom:14px;}
+  .form-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .field label{
+    display:block;
+    font-size:11px;
+    font-weight:600;
+    color:#6b6354;
+    margin-bottom:4px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+  .field input,.field select{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    font-size:14px;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  .form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px;}
+  .btn{
+    border:none;
+    border-radius:9px;
+    padding:9px 18px;
+    font-weight:700;
+    font-size:13.5px;
+  }
+  .btn-primary{background:var(--teal);color:var(--chalk);}
+  .btn-primary:hover{background:#26392f;}
+  .btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line);}
+  .btn-ghost:hover{background:var(--paper-soft);}
+  .btn-danger{background:transparent;color:var(--rate-up);border:1px solid var(--rate-up);}
+  .btn-danger:hover{background:rgba(168,68,47,0.08);}
+  .form-error{color:var(--rate-up);font-size:12.5px;margin-top:6px;}
+
+  .product-row{
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:14px 14px 12px;
+    margin-bottom:10px;
+    background:var(--paper);
+  }
+  .product-row:last-child{margin-bottom:0;}
+  .row-meta{font-size:11px;color:#9a9382;margin-top:2px;}
+  .row-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:4px;}
+  .icon-btn{
+    background:none;border:none;font-size:13px;font-weight:700;
+    padding:6px 10px;border-radius:7px;
+  }
+  .save-flag{color:var(--marigold-deep);}
+  .save-flag:hover{background:rgba(232,163,61,0.15);}
+  .del-flag{color:var(--rate-up);}
+  .del-flag:hover{background:rgba(168,68,47,0.1);}
+
+  .toast{
+    position:fixed;
+    bottom:24px;left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--ink);
+    color:var(--chalk);
+    padding:11px 20px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:600;
+    opacity:0;
+    transition:opacity .25s, transform .25s;
+    pointer-events:none;
+    z-index:80;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{
+    position:fixed;inset:0;
+    background:rgba(30,38,32,0.55);
+    display:flex;align-items:center;justify-content:center;
+    z-index:90;padding:20px;
+  }
+  .modal-box{
+    background:var(--paper);
+    border-radius:16px;
+    padding:26px;
+    max-width:360px;
+    width:100%;
+    box-shadow:var(--shadow);
+  }
+  .modal-box h3{font-size:18px;margin-bottom:8px;}
+  .modal-box p{font-size:13.5px;color:#6b6354;margin-bottom:16px;line-height:1.45;}
+  .modal-box input{
+    width:100%;
+    padding:11px 12px;
+    border:1px solid var(--line);
+    border-radius:9px;
+    font-size:16px;
+    letter-spacing:.15em;
+    text-align:center;
+    margin-bottom:10px;
+  }
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px;}
+  .modal-error{color:var(--rate-up);font-size:12.5px;margin-bottom:8px;}
+  .modal-link{font-size:12px;color:#8a8270;text-decoration:underline;background:none;border:none;padding:0;margin-top:10px;display:inline-block;}
+
+  @media (prefers-reduced-motion: reduce){
+    .rate-card, .rate-num.flipping{animation:none !important;}
+  }
+
+  /* ---------- Hatching intro ---------- */
+  .intro-overlay{
+    position:fixed;inset:0;
+    background:var(--paper);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    z-index:200;
+    transition:opacity .5s ease;
+    cursor:pointer;
+  }
+  .intro-overlay.fade-out{opacity:0;pointer-events:none;}
+  .intro-scene{width:170px;height:170px;}
+  .intro-scene svg{width:100%;height:100%;overflow:visible;}
+
+  #intro-egg-group{
+    transform-origin:100px 115px;
+    animation-name:eggWobble, eggVanish;
+    animation-duration:0.9s, 0.2s;
+    animation-delay:0s, 1.05s;
+    animation-timing-function:ease-in-out, ease;
+    animation-fill-mode:forwards, forwards;
+  }
+  #intro-crack{
+    opacity:0;
+    animation:crackIn 0.25s ease forwards;
+    animation-delay:0.7s;
+  }
+  #intro-shell-left{
+    opacity:0;
+    transform-origin:86px 122px;
+    animation:shellLeft 0.6s ease forwards;
+    animation-delay:1.05s;
+  }
+  #intro-shell-right{
+    opacity:0;
+    transform-origin:114px 122px;
+    animation:shellRight 0.6s ease forwards;
+    animation-delay:1.05s;
+  }
+  #intro-chick{
+    opacity:0;
+    transform-origin:100px 138px;
+    animation-name:chickPop, chickWiggle;
+    animation-duration:0.6s, 0.7s;
+    animation-delay:1.1s, 1.85s;
+    animation-timing-function:cubic-bezier(.34,1.56,.64,1), ease-in-out;
+    animation-fill-mode:forwards, forwards;
+  }
+  @keyframes eggWobble{
+    0%{transform:scale(.7) rotate(0deg);opacity:0;}
+    25%{transform:scale(1.05) rotate(-8deg);opacity:1;}
+    45%{transform:scale(1) rotate(7deg);}
+    65%{transform:scale(1) rotate(-4deg);}
+    85%{transform:scale(1) rotate(2deg);}
+    100%{transform:scale(1) rotate(0deg);}
+  }
+  @keyframes crackIn{ from{opacity:0;} to{opacity:1;} }
+  @keyframes eggVanish{ from{opacity:1;} to{opacity:0;} }
+  @keyframes shellLeft{
+    0%{opacity:0;transform:translate(0,0) rotate(0deg);}
+    10%{opacity:1;}
+    100%{opacity:1;transform:translate(-24px,20px) rotate(-22deg);}
+  }
+  @keyframes shellRight{
+    0%{opacity:0;transform:translate(0,0) rotate(0deg);}
+    10%{opacity:1;}
+    100%{opacity:1;transform:translate(24px,20px) rotate(22deg);}
+  }
+  @keyframes chickPop{
+    0%{opacity:0;transform:translateY(18px) scale(.4);}
+    100%{opacity:1;transform:translateY(-6px) scale(1);}
+  }
+  @keyframes chickWiggle{
+    0%,100%{transform:translateY(-6px) scale(1) rotate(0deg);}
+    25%{transform:translateY(-8px) scale(1) rotate(-5deg);}
+    75%{transform:translateY(-8px) scale(1) rotate(5deg);}
+  }
+  .intro-text{
+    margin-top:14px;
+    font-size:13.5px;
+    color:#6b6354;
+    text-align:center;
+    opacity:0;
+    animation:textIn 0.45s ease forwards;
+    animation-delay:1.6s;
+  }
+  .intro-text strong{
+    display:block;
+    font-family:'Fraunces',serif;
+    font-size:21px;
+    font-weight:700;
+    color:var(--ink);
+    margin-top:3px;
+  }
+  @keyframes textIn{ from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:translateY(0);} }
+  .intro-skip{
+    margin-top:14px;
+    font-size:11px;
+    color:#a39c8a;
+    opacity:0;
+    animation:textIn 0.45s ease forwards;
+    animation-delay:2.1s;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .intro-overlay, #intro-egg-group, #intro-crack, #intro-shell-left, #intro-shell-right, #intro-chick, .intro-text, .intro-skip{
+      animation:none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="intro-overlay" class="intro-overlay" aria-hidden="true">
+  <div class="intro-scene">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <g id="intro-egg-group">
+        <ellipse cx="100" cy="115" rx="52" ry="62" fill="#ECE7D8" stroke="#2A2620" stroke-width="2.5"/>
+        <path id="intro-crack" d="M78,72 L92,98 L80,118 L98,142 L88,162" fill="none" stroke="#2A2620" stroke-width="2"/>
+      </g>
+      <path id="intro-shell-left" d="M48,150 C48,128 66,114 86,122 L86,158 C72,162 56,160 48,150 Z" fill="#ECE7D8" stroke="#2A2620" stroke-width="2.5"/>
+      <path id="intro-shell-right" d="M152,150 C152,128 134,114 114,122 L114,158 C128,162 144,160 152,150 Z" fill="#ECE7D8" stroke="#2A2620" stroke-width="2.5"/>
+      <g id="intro-chick">
+        <path d="M82,134 Q68,144 82,158" fill="none" stroke="#2A2620" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="100" cy="138" r="29" fill="#E8A33D" stroke="#2A2620" stroke-width="2.5"/>
+        <circle cx="100" cy="100" r="18" fill="#E8A33D" stroke="#2A2620" stroke-width="2.5"/>
+        <path d="M117,100 L134,105 L117,110 Z" fill="#C77F1F" stroke="#2A2620" stroke-width="1"/>
+        <circle cx="106" cy="97" r="3" fill="#2A2620"/>
+      </g>
+    </svg>
+  </div>
+  <div class="intro-text">Welcome to<br><strong>SBF Hatcheries and Breeders, Nagamangala</strong></div>
+  <div class="intro-skip">tap anywhere to skip</div>
+</div>
+
+<div id="banner-root"></div>
+<div id="app">
+  <header class="top">
+    <div>
+      <div class="shop-name-row">
+        <div id="shop-name-display" class="shop-name">SBF Hatcheries and Breeders, Nagamangala</div>
+        <svg class="farm-mark" width="40" height="34" viewBox="0 0 56 46" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+          <path d="M6 40 C6 30 14 26 22 30 L22 40 Z" fill="#ECE7D8" stroke="#2A2620" stroke-width="1.5"/>
+          <path d="M50 40 C50 30 42 26 34 30 L34 40 Z" fill="#ECE7D8" stroke="#2A2620" stroke-width="1.5"/>
+          <circle cx="28" cy="24" r="13" fill="#E8A33D" stroke="#2A2620" stroke-width="1.5"/>
+          <circle cx="28" cy="10" r="8" fill="#E8A33D" stroke="#2A2620" stroke-width="1.5"/>
+          <path d="M34 10 L40 12 L34 14 Z" fill="#C77F1F" stroke="#2A2620" stroke-width="1"/>
+          <circle cx="30" cy="9" r="1.3" fill="#2A2620"/>
+          <path d="M20 22 Q15 26 20 31" fill="none" stroke="#2A2620" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M24 36 L22 40 M24 36 L26 40 M32 36 L30 40 M32 36 L34 40" stroke="#C77F1F" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="board-subtitle" id="board-subtitle">Today's rates</div>
+      <div class="board-contact" id="board-contact"></div>
+    </div>
+    <div id="nav-slot"></div>
+  </header>
+  <div id="view-root"></div>
+</div>
+<div id="modal-root"></div>
+<div id="toast" class="toast"></div>
+
+<script>
+(function(){
+
+  /* ===================== Storage layer ===================== */
+  var STORAGE_KEY = 'store-data';
+  var hasRealStorage = typeof window.storage !== 'undefined' && window.storage;
+  var localFallback = null;
+
+  async function loadState(){
+    var defaultState = { shopName:'SBF Hatcheries and Breeders, Nagamangala', contactNumber:'9590974233', products:[] };
+    if(!hasRealStorage){
+      showBanner('Preview mode — open this as a Claude artifact link to save rates for everyone who visits.');
+      return localFallback || defaultState;
+    }
+    try{
+      var res = await window.storage.get(STORAGE_KEY, true);
+      if(res && res.value){
+        return JSON.parse(res.value);
+      }
+      return defaultState;
+    }catch(e){
+      return defaultState;
+    }
+  }
+
+  async function saveState(state){
+    if(!hasRealStorage){
+      localFallback = state;
+      return true;
+    }
+    try{
+      var res = await window.storage.set(STORAGE_KEY, JSON.stringify(state), true);
+      return !!res;
+    }catch(e){
+      showToast('Could not save — check your connection');
+      return false;
+    }
+  }
+
+  function showBanner(msg){
+    document.getElementById('banner-root').innerHTML =
+      '<div class="preview-banner">'+msg+'</div>';
+  }
+
+  /* ===================== App state ===================== */
+  var state = { shopName:'SBF Hatcheries and Breeders, Nagamangala', contactNumber:'9590974233', products:[] };
+  var view = 'board';            // 'board' | 'admin'
+  var sessionUnlocked = false;
+  var recentlyUpdated = new Set();
+  var activeCategory = 'All';
+  var searchTerm = '';
+  var pollTimer = null;
+  var clockTimer = null;
+  var lastUpdatedTs = null;
+
+  /* ===================== Helpers ===================== */
+  function uid(){ return 'p_' + Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-4); }
+
+  function fmtMoney(n){
+    if(isNaN(n)) return '0';
+    return new Intl.NumberFormat('en-IN').format(n);
+  }
+
+  function unitLabel(u){
+    var map = { kg:'/kg', '100g':'/100g', '10g':'/10g', g:'/g', piece:'/pc', dozen:'/dozen' };
+    return map[u] || '/'+u;
+  }
+
+  function relTime(ts){
+    if(!ts) return '—';
+    var diff = Date.now() - ts;
+    var m = Math.floor(diff/60000);
+    if(m < 1) return 'just now';
+    if(m < 60) return m + ' min ago';
+    var h = Math.floor(m/60);
+    if(h < 24) return h + ' hr' + (h>1?'s':'') + ' ago';
+    var d = Math.floor(h/24);
+    return d + ' day' + (d>1?'s':'') + ' ago';
+  }
+
+  function showToast(msg){
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+  }
+
+  function tickClock(){
+    var now = new Date();
+    var dateStr = now.toLocaleDateString('en-IN', { weekday:'short', day:'2-digit', month:'short', year:'numeric' });
+    var timeStr = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    var el = document.getElementById('board-subtitle');
+    if(el) el.textContent = dateStr + '  ·  ' + timeStr;
+  }
+  function startClock(){
+    if(clockTimer) clearInterval(clockTimer);
+    tickClock();
+    clockTimer = setInterval(tickClock, 1000);
+  }
+
+  function escapeHtml(s){
+    return String(s||'').replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  /* ===================== Modal system ===================== */
+  function openModal(opts){
+    var root = document.getElementById('modal-root');
+    root.innerHTML =
+      '<div class="modal-overlay" id="modal-overlay">'+
+        '<div class="modal-box">'+
+          '<h3>'+opts.title+'</h3>'+
+          (opts.desc ? '<p>'+opts.desc+'</p>' : '')+
+          '<div id="modal-body">'+(opts.body||'')+'</div>'+
+          '<div id="modal-error" class="modal-error" style="display:none;"></div>'+
+          '<div class="modal-actions" id="modal-actions"></div>'+
+        '</div>'+
+      '</div>';
+    var actions = document.getElementById('modal-actions');
+    (opts.buttons||[]).forEach(function(b){
+      var btn = document.createElement('button');
+      btn.className = 'btn ' + (b.primary ? 'btn-primary' : 'btn-ghost');
+      btn.textContent = b.label;
+      btn.onclick = b.onClick;
+      actions.appendChild(btn);
+    });
+    document.getElementById('modal-overlay').addEventListener('click', function(e){
+      if(e.target.id === 'modal-overlay') closeModal();
+    });
+  }
+  function closeModal(){ document.getElementById('modal-root').innerHTML=''; }
+  function modalError(msg){
+    var el = document.getElementById('modal-error');
+    el.textContent = msg; el.style.display = 'block';
+  }
+
+  /* ===================== Admin gate ===================== */
+  var MANAGER_USERNAME = 'manager@star';
+  var MANAGER_PASSWORD = 'QQcc23@#';
+
+  function requestAdmin(){
+    openModal({
+      title:'Manager login',
+      desc:'Enter your manager username and password to manage rates.',
+      body:'<input id="mgr-user" type="text" autocomplete="username" placeholder="Username" style="margin-bottom:8px;text-align:left;letter-spacing:normal;font-size:14px;">'+
+           '<input id="mgr-pass" type="password" autocomplete="current-password" placeholder="Password" style="text-align:left;letter-spacing:normal;font-size:14px;">',
+      buttons:[
+        {label:'Cancel', onClick:closeModal},
+        {label:'Log in', primary:true, onClick:function(){
+          var u = document.getElementById('mgr-user').value.trim();
+          var p = document.getElementById('mgr-pass').value;
+          if(u === MANAGER_USERNAME && p === MANAGER_PASSWORD){
+            sessionUnlocked = true;
+            closeModal();
+            switchView('admin');
+            showToast('Logged in');
+          } else {
+            modalError('Incorrect username or password.');
+          }
+        }}
+      ]
+    });
+    setTimeout(function(){
+      var passInput = document.getElementById('mgr-pass');
+      if(passInput) passInput.addEventListener('keydown', function(e){
+        if(e.key === 'Enter') document.querySelectorAll('.modal-actions .btn-primary')[0].click();
+      });
+    }, 0);
+  }
+
+  /* ===================== Rendering: shell ===================== */
+  function renderShell(){
+    document.getElementById('shop-name-display').textContent = state.shopName || 'SBF Hatcheries and Breeders, Nagamangala';
+    document.getElementById('board-contact').textContent = state.contactNumber ? ('📞 ' + state.contactNumber) : '';
+    var navSlot = document.getElementById('nav-slot');
+    if(view === 'board'){
+      navSlot.innerHTML = '<button class="nav-link" id="manage-btn">🔒 Manage rates</button>';
+      document.getElementById('manage-btn').onclick = function(){
+        if(sessionUnlocked) switchView('admin');
+        else requestAdmin();
+      };
+    } else {
+      navSlot.innerHTML = '<button class="nav-link" id="board-btn">← Back to board</button>';
+      document.getElementById('board-btn').onclick = function(){ switchView('board'); };
+    }
+  }
+
+  function switchView(v){
+    view = v;
+    renderShell();
+    if(v === 'board'){ renderBoard(); startPolling(); }
+    else { stopPolling(); renderAdmin(); }
+  }
+
+  /* ===================== Board view ===================== */
+  function categoriesOf(products){
+    var set = new Set();
+    products.forEach(function(p){ if(p.category) set.add(p.category); });
+    return Array.from(set).sort();
+  }
+
+  function renderBoard(){
+    var root = document.getElementById('view-root');
+    var products = state.products.slice();
+    var cats = categoriesOf(products);
+    var latest = products.reduce(function(m,p){ return Math.max(m, p.updatedAt||0); }, 0);
+    lastUpdatedTs = products.length ? latest : null;
+
+    if(products.length === 0){
+      root.innerHTML =
+        '<div class="board-panel"><div class="empty-state">'+
+          '<h3>No rates posted yet</h3>'+
+          '<p>'+(sessionUnlocked ? 'Add your first product rate to get the board live.' : 'Check back soon — the shop hasn\'t posted today\'s rates yet.')+'</p>'+
+          (sessionUnlocked ? '<button class="empty-cta" id="empty-cta">Add a rate</button>' : '')+
+        '</div></div>';
+      if(sessionUnlocked){
+        document.getElementById('empty-cta').onclick = function(){ switchView('admin'); };
+      }
+      return;
+    }
+
+    var filtered = products.filter(function(p){
+      var matchCat = activeCategory === 'All' || p.category === activeCategory;
+      var matchSearch = !searchTerm || p.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
+      return matchCat && matchSearch;
+    });
+
+    var chipsHtml = '<button class="chip '+(activeCategory==='All'?'active':'')+'" data-cat="All">All</button>' +
+      cats.map(function(c){
+        return '<button class="chip '+(activeCategory===c?'active':'')+'" data-cat="'+escapeHtml(c)+'">'+escapeHtml(c)+'</button>';
+      }).join('');
+
+    var grouped = {};
+    filtered.forEach(function(p){
+      var key = p.category || 'Other';
+      grouped[key] = grouped[key] || [];
+      grouped[key].push(p);
+    });
+    var groupKeys = Object.keys(grouped).sort();
+
+    var boardHtml = groupKeys.length ? groupKeys.map(function(cat){
+      var items = grouped[cat].slice().sort(function(a,b){ return a.name.localeCompare(b.name); });
+      var cards = items.map(function(p){
+        var trend = '';
+        if(p.prevRate != null && p.prevRate !== p.rate){
+          trend = p.rate > p.prevRate
+            ? '<span class="trend up">▲</span>'
+            : '<span class="trend down">▼</span>';
+        }
+        var flipClass = recentlyUpdated.has(p.id) ? ' flipping' : '';
+        return '<div class="rate-card">'+
+          '<div class="pname">'+escapeHtml(p.name)+'</div>'+
+          '<div class="rate-row">'+
+            '<span class="rate-num'+flipClass+'" data-id="'+p.id+'">₹'+fmtMoney(p.rate)+'</span>'+
+            '<span class="rate-unit">'+unitLabel(p.unit)+'</span>'+
+            trend+
+          '</div>'+
+          (p.note ? '<div class="pnote">'+escapeHtml(p.note)+'</div>' : '')+
+          '<div class="pupdated">Updated '+relTime(p.updatedAt)+'</div>'+
+        '</div>';
+      }).join('');
+      return '<div class="category-block"><div class="category-title">'+escapeHtml(cat)+'</div><div class="card-grid">'+cards+'</div></div>';
+    }).join('') : '<div class="empty-state"><h3>No matches</h3><p>Try a different search or category.</p></div>';
+
+    root.innerHTML =
+      '<div class="controls">'+
+        '<input class="search-box" id="search-input" placeholder="Search products…" value="'+escapeHtml(searchTerm)+'">'+
+        '<div class="chips">'+chipsHtml+'</div>'+
+      '</div>'+
+      '<div class="board-panel">'+boardHtml+'</div>'+
+      '<div class="board-footer">'+(hasRealStorage ? 'Live rates — synced for everyone with this link' : 'Preview mode')+
+        (lastUpdatedTs ? ' · Last updated ' + relTime(lastUpdatedTs) : '') + '</div>';
+
+    recentlyUpdated.clear();
+
+    document.getElementById('search-input').oninput = function(e){
+      searchTerm = e.target.value;
+      renderBoard();
+    };
+    Array.prototype.forEach.call(document.querySelectorAll('.chip'), function(chip){
+      chip.onclick = function(){
+        activeCategory = chip.getAttribute('data-cat');
+        renderBoard();
+      };
+    });
+  }
+
+  function startPolling(){
+    stopPolling();
+    if(!hasRealStorage) return;
+    pollTimer = setInterval(async function(){
+      if(view !== 'board') return;
+      try{
+        var res = await window.storage.get(STORAGE_KEY, true);
+        if(!res || !res.value) return;
+        var fresh = JSON.parse(res.value);
+        var changed = false;
+        fresh.products.forEach(function(np){
+          var old = state.products.find(function(p){ return p.id === np.id; });
+          if(old && old.rate !== np.rate){ recentlyUpdated.add(np.id); changed = true; }
+          if(!old) changed = true;
+        });
+        if(fresh.products.length !== state.products.length) changed = true;
+        if(fresh.shopName !== state.shopName) changed = true;
+        state = fresh;
+        if(changed) renderBoard();
+      }catch(e){ /* silent */ }
+    }, 7000);
+  }
+  function stopPolling(){ if(pollTimer){ clearInterval(pollTimer); pollTimer = null; } }
+
+  /* ===================== Admin view ===================== */
+  var newDraft = { name:'', category:'', rate:'', unit:'kg', note:'' };
+  var rowDrafts = {};
+
+  function renderAdmin(){
+    var root = document.getElementById('view-root');
+    var cats = categoriesOf(state.products);
+    var catOptions = cats.map(function(c){ return '<option value="'+escapeHtml(c)+'">'; }).join('');
+
+    var addFormHtml =
+      '<div class="admin-card">'+
+        '<h3>Add a product rate</h3>'+
+        '<div class="form-grid">'+
+          '<div class="field"><label>Product name</label><input id="new-name" placeholder="e.g. Broiler Chicken" value="'+escapeHtml(newDraft.name)+'"></div>'+
+          '<div class="field"><label>Category</label><input id="new-category" list="cat-list" placeholder="e.g. Poultry" value="'+escapeHtml(newDraft.category)+'"></div>'+
+          '<div class="field"><label>Rate (₹)</label><input id="new-rate" type="number" min="0" step="0.01" placeholder="0" value="'+escapeHtml(newDraft.rate)+'"></div>'+
+          '<div class="field"><label>Per</label><select id="new-unit">'+
+            ['kg','100g','10g','g','piece','dozen'].map(function(u){
+              return '<option value="'+u+'"'+(newDraft.unit===u?' selected':'')+'>'+unitLabel(u)+'</option>';
+            }).join('')+
+          '</select></div>'+
+          '<div class="field"><label>Quantity (kg)</label><input id="new-quantity" type="number" min="0" step="0.01" placeholder="e.g. 50" value="'+escapeHtml(newDraft.quantity)+'"></div>'+
+          '<div class="field"><label>Place</label><input id="new-place" placeholder="e.g. Nagamangala" value="'+escapeHtml(newDraft.place)+'"></div>'+
+        '</div>'+
+        '<div class="field" style="margin-bottom:10px;"><label>Note (optional)</label><input id="new-note" placeholder="e.g. Premium quality" value="'+escapeHtml(newDraft.note)+'"></div>'+
+        '<div id="new-error" class="form-error" style="display:none;"></div>'+
+        '<div class="form-actions"><button class="btn btn-primary" id="add-btn">Add rate</button></div>'+
+      '</div>'+
+      '<datalist id="cat-list">'+catOptions+'</datalist>';
+
+    var rowsHtml = state.products.slice().sort(function(a,b){
+      return (a.category||'').localeCompare(b.category||'') || a.name.localeCompare(b.name);
+    }).map(function(p){
+      var d = rowDrafts[p.id] || { name:p.name, category:p.category, rate:p.rate, unit:p.unit, quantity:p.quantity!=null?p.quantity:'', place:p.place||'', note:p.note||'' };
+      rowDrafts[p.id] = d;
+      var dirty = d.name!==p.name || d.category!==p.category || String(d.rate)!==String(p.rate) || d.unit!==p.unit ||
+        String(d.quantity)!==String(p.quantity!=null?p.quantity:'') || d.place!==(p.place||'') || d.note!==(p.note||'');
+      return '<div class="product-row" data-row="'+p.id+'">'+
+        '<div class="form-grid">'+
+          '<div class="field"><label>Product name</label><input data-f="name" value="'+escapeHtml(d.name)+'"></div>'+
+          '<div class="field"><label>Category</label><input data-f="category" list="cat-list" value="'+escapeHtml(d.category)+'"></div>'+
+          '<div class="field"><label>Rate (₹)</label><input data-f="rate" type="number" min="0" step="0.01" value="'+escapeHtml(d.rate)+'"></div>'+
+          '<div class="field"><label>Per</label><select data-f="unit">'+
+            ['kg','100g','10g','g','piece','dozen'].map(function(u){
+              return '<option value="'+u+'"'+(d.unit===u?' selected':'')+'>'+unitLabel(u)+'</option>';
+            }).join('')+
+          '</select></div>'+
+          '<div class="field"><label>Quantity (kg)</label><input data-f="quantity" type="number" min="0" step="0.01" value="'+escapeHtml(d.quantity)+'"></div>'+
+          '<div class="field"><label>Place</label><input data-f="place" value="'+escapeHtml(d.place)+'"></div>'+
+        '</div>'+
+        '<div class="row-actions">'+
+          '<button class="icon-btn save-flag" data-act="save" data-id="'+p.id+'" '+(dirty?'':'disabled style="opacity:.35;"')+'>Save</button>'+
+          '<button class="icon-btn del-flag" data-act="delete" data-id="'+p.id+'">Delete</button>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+
+    root.innerHTML =
+      '<div class="admin-card">'+
+        '<h3>Shop details</h3>'+
+        '<div class="field" style="margin-bottom:10px;"><label>Shop name</label><input id="shop-name-input" value="'+escapeHtml(state.shopName)+'"></div>'+
+        '<div class="field"><label>Contact number</label><input id="contact-input" value="'+escapeHtml(state.contactNumber||'')+'"></div>'+
+      '</div>'+
+      addFormHtml+
+      '<div class="admin-card">'+
+        '<h3>Current rates ('+state.products.length+')</h3>'+
+        (state.products.length ? rowsHtml : '<p style="color:#9a9382;font-size:13.5px;">No products yet — add one above.</p>')+
+      '</div>'+
+      '<button class="nav-link" id="lock-btn" style="margin-top:4px;">🔒 Lock admin</button>';
+
+    // shop name + contact
+    document.getElementById('shop-name-input').onblur = async function(e){
+      state.shopName = e.target.value.trim() || 'SBF Hatcheries and Breeders, Nagamangala';
+      await saveState(state);
+      renderShell();
+      showToast('Shop name saved');
+    };
+    document.getElementById('contact-input').onblur = async function(e){
+      state.contactNumber = e.target.value.trim();
+      await saveState(state);
+      renderShell();
+      showToast('Contact number saved');
+    };
+
+    // add product
+    ['new-name','new-category','new-rate','new-quantity','new-place','new-note'].forEach(function(id){
+      document.getElementById(id).oninput = function(e){
+        var key = id.replace('new-','');
+        newDraft[key] = e.target.value;
+      };
+    });
+    document.getElementById('new-unit').onchange = function(e){ newDraft.unit = e.target.value; };
+    document.getElementById('add-btn').onclick = async function(){
+      var errEl = document.getElementById('new-error');
+      errEl.style.display = 'none';
+      var name = (document.getElementById('new-name').value||'').trim();
+      var category = (document.getElementById('new-category').value||'').trim();
+      var rate = parseFloat(document.getElementById('new-rate').value);
+      var unit = document.getElementById('new-unit').value;
+      var quantityRaw = document.getElementById('new-quantity').value;
+      var quantity = quantityRaw === '' ? null : parseFloat(quantityRaw);
+      var place = (document.getElementById('new-place').value||'').trim();
+      var note = (document.getElementById('new-note').value||'').trim();
+      if(!name){ errEl.textContent='Product name is required.'; errEl.style.display='block'; return; }
+      if(isNaN(rate) || rate < 0){ errEl.textContent='Enter a valid rate.'; errEl.style.display='block'; return; }
+      if(quantity != null && (isNaN(quantity) || quantity < 0)){ errEl.textContent='Enter a valid quantity.'; errEl.style.display='block'; return; }
+      var product = { id:uid(), name:name, category:category||'Other', rate:rate, prevRate:null, unit:unit, quantity:quantity, place:place, note:note, updatedAt:Date.now() };
+      state.products.push(product);
+      await saveState(state);
+      recentlyUpdated.add(product.id);
+      newDraft = { name:'', category:category, rate:'', unit:unit, quantity:'', place:place, note:'' };
+      showToast('Rate added');
+      renderAdmin();
+    };
+
+    // row edits
+    Array.prototype.forEach.call(document.querySelectorAll('.product-row'), function(row){
+      var id = row.getAttribute('data-row');
+      Array.prototype.forEach.call(row.querySelectorAll('[data-f]'), function(input){
+        input.oninput = input.onchange = function(e){
+          var f = e.target.getAttribute('data-f');
+          rowDrafts[id][f] = e.target.value;
+          var saveBtn = row.querySelector('[data-act="save"]');
+          saveBtn.disabled = false;
+          saveBtn.removeAttribute('style');
+        };
+      });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-act="save"]'), function(btn){
+      btn.onclick = async function(){
+        var id = btn.getAttribute('data-id');
+        var d = rowDrafts[id];
+        var p = state.products.find(function(x){ return x.id === id; });
+        if(!p) return;
+        if(!d.name.trim()){ showToast('Name cannot be empty'); return; }
+        var newRate = parseFloat(d.rate);
+        if(isNaN(newRate) || newRate < 0){ showToast('Enter a valid rate'); return; }
+        var newQuantity = d.quantity === '' ? null : parseFloat(d.quantity);
+        if(newQuantity != null && (isNaN(newQuantity) || newQuantity < 0)){ showToast('Enter a valid quantity'); return; }
+        if(newRate !== p.rate) p.prevRate = p.rate;
+        p.name = d.name.trim();
+        p.category = d.category.trim() || 'Other';
+        p.rate = newRate;
+        p.unit = d.unit;
+        p.quantity = newQuantity;
+        p.place = d.place.trim();
+        p.note = d.note.trim();
+        p.updatedAt = Date.now();
+        await saveState(state);
+        recentlyUpdated.add(id);
+        showToast('Saved');
+        renderAdmin();
+      };
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-act="delete"]'), function(btn){
+      btn.onclick = function(){
+        var id = btn.getAttribute('data-id');
+        var p = state.products.find(function(x){ return x.id === id; });
+        if(!p) return;
+        openModal({
+          title:'Delete this rate?',
+          desc:'"'+escapeHtml(p.name)+'" will be removed from the board for everyone. This can\'t be undone.',
+          buttons:[
+            {label:'Cancel', onClick:closeModal},
+            {label:'Delete', primary:true, onClick:async function(){
+              state.products = state.products.filter(function(x){ return x.id !== id; });
+              delete rowDrafts[id];
+              await saveState(state);
+              closeModal();
+              showToast('Deleted');
+              renderAdmin();
+            }}
+          ]
+        });
+      };
+    });
+
+    document.getElementById('lock-btn').onclick = function(){
+      sessionUnlocked = false;
+      switchView('board');
+    };
+  }
+
+  /* ===================== Hatching intro ===================== */
+  function initIntro(){
+    var overlay = document.getElementById('intro-overlay');
+    if(!overlay) return;
+    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduced){ overlay.remove(); return; }
+    var dismissed = false;
+    function dismiss(){
+      if(dismissed) return;
+      dismissed = true;
+      overlay.classList.add('fade-out');
+      setTimeout(function(){ if(overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 550);
+    }
+    overlay.addEventListener('click', dismiss);
+    setTimeout(dismiss, 2700);
+  }
+  initIntro();
+
+  /* ===================== Init ===================== */
+  async function init(){
+    state = await loadState();
+    renderShell();
+    renderBoard();
+    startPolling();
+    startClock();
+  }
+  init();
+
+})();
+</script>
+</body>
+</html>
